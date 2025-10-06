@@ -57,6 +57,7 @@ public class SeparaStatusChamados {
             case 8 -> "Feedback";
             case 9 -> "Aguardando Resposta";
             case 10 -> "Encaminhado Nível 3";
+            case 11 -> "Aguardando assistencia";
             case 12 -> "Encaminhado Nível 2";
             default -> "Desconhecido (" + status + ")";
         };

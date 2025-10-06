@@ -62,9 +62,9 @@ public class ApiService {
 //                new StatusDTO("5", "Closed"),
 //                new StatusDTO("6", "Reopened"),
                 new StatusDTO("8", "Feedback"),
-//                new StatusDTO("9", "Awaiting response"),
+                new StatusDTO("9", "Awaiting response"),
                 new StatusDTO("10", "Forwarding level 3"),
-//                new StatusDTO("11", "Awaiting For Technical Assistance"),
+                new StatusDTO("11", "Awaiting For Technical Assistance"),
                 new StatusDTO("12", "Forwarding level 2")
 
         ));
@@ -106,9 +106,9 @@ public class ApiService {
 //                new StatusDTO("5", "Closed"),
 //                new StatusDTO("6", "Reopened"),
                 new StatusDTO("8", "Feedback"),
-//                new StatusDTO("9", "Awaiting response"),
+                new StatusDTO("9", "Awaiting response"),
                 new StatusDTO("10", "Forwarding level 3"),
-//                new StatusDTO("11", "Awaiting For Technical Assistance"),
+                new StatusDTO("11", "Awaiting For Technical Assistance"),
                 new StatusDTO("12", "Forwarding level 2")
 
         ));

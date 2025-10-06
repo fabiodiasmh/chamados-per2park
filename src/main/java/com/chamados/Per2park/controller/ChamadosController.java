@@ -1,10 +1,12 @@
 package com.chamados.Per2park.controller;
 
+import com.chamados.Per2park.controller.RequestDTO.MonitorServerRequestDTO;
 import com.chamados.Per2park.controller.RequestDTO.RequestAutentica;
 import com.chamados.Per2park.controller.ResponseDTO.ChamadoBaseDTO;
-import com.chamados.Per2park.controller.ResponseDTO.ChamadosAgrupadosPorStatusDTO;
+import com.chamados.Per2park.controller.ResponseDTO.MonitorServerResponseDTO;
 import com.chamados.Per2park.controller.ResponseDTO.TokenDTO;
 import com.chamados.Per2park.service.ApiService;
+import com.chamados.Per2park.service.MonitorServerService;
 import com.chamados.Per2park.service.SeparaStatusChamados;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +21,13 @@ public class ChamadosController {
 
     private final ApiService apiService;
     private final SeparaStatusChamados separaStatusChamados;
+    private final MonitorServerService monitorServerService;
 
 
-
-    public ChamadosController(ApiService apiService, SeparaStatusChamados separaStatusChamados) {
+    public ChamadosController(ApiService apiService, SeparaStatusChamados separaStatusChamados, MonitorServerService monitorServerService) {
         this.apiService = apiService;
-
         this.separaStatusChamados = separaStatusChamados;
+        this.monitorServerService = monitorServerService;
     }
 
     @PostMapping("/login")
@@ -74,6 +76,24 @@ public class ChamadosController {
         w.forEach((s-> System.out.println(s)));
 
         return ResponseEntity.ok(w);
+    }
+
+    @GetMapping("/replicacao")
+    public ResponseEntity<List<MonitorServerResponseDTO>> monitorServer(HttpSession session){
+        String token = (String) session.getAttribute("TOKEN_USUARIO");
+
+       List<MonitorServerResponseDTO> resposta = monitorServerService.monitoramentoReplicacaoService(token);
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    @GetMapping("/geral")
+    public ResponseEntity<List<MonitorServerRequestDTO>> monitorServerGeral(HttpSession session){
+        String token = (String) session.getAttribute("TOKEN_USUARIO");
+
+        List<MonitorServerRequestDTO> resposta = monitorServerService.monitoramentoServerGeralService(token);
+
+        return ResponseEntity.ok(resposta);
     }
 
 

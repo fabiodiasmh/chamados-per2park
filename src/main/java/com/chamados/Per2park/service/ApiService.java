@@ -10,8 +10,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,20 +39,29 @@ public class ApiService {
     private ObjectMapper objectMapper; // Injetado pelo Spring Boot
 
     public TokenDTO ServiceAutentica(RequestAutentica dados) {
-        Object[] responseArray = webClientAuth.post()
-                .uri("/api/v0/User/userValidation")
-                .bodyValue(dados)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .map(body -> new RuntimeException("Erro API: " + body)))
+
+        try {
+            // chamada WebClient...
+            Object[] responseArray = webClientAuth.post()
+                    .uri("/api/v0/User/userValidation")
+                    .bodyValue(dados)
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class)
+                                    .map(body -> new RuntimeException("Erro API: " + body)))
 //                .bodyToMono(String.class)
 //                .block(); // bloqueia até receber resposta (modo síncrono)
-                .bodyToMono(Object[].class)
-                .block();
+                    .bodyToMono(Object[].class)
+                    .block();
 
-        String resultado = responseArray != null ? responseArray[1].toString() : null;
-        return new TokenDTO(resultado);
+            String resultado = responseArray != null ? responseArray[1].toString() : null;
+            return new TokenDTO(resultado);
+        } catch (WebClientResponseException.Unauthorized ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas para o serviço externo");
+        } catch (WebClientResponseException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro no serviço externo: " + ex.getResponseBodyAsString());
+        }
+
 
     }
 

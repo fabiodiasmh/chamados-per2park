@@ -6,6 +6,24 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
+//@Configuration
+//public class CorsConfig {
+//
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("http://localhost:9000",
+//                                "https://chamados-per2park.web.app") // seu frontend
+//                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                        .allowedHeaders("*")
+//                        .allowCredentials(true);
+//            }
+//        };
+//    }
+
 @Configuration
 public class CorsConfig {
 
@@ -15,7 +33,9 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:9000") // seu frontend
+                        .allowedOrigins(
+                                "http://localhost:9000",
+                                "https://chamados-per2park.web.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
@@ -23,3 +43,18 @@ public class CorsConfig {
         };
     }
 }
+
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**") // Aplica para todos os endpoints
+//                        .allowedOrigins("*") // Permite todas as origens
+//                        .allowedMethods("*") // Permite todos os métodos HTTP
+////                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+//                        .allowedHeaders("*") // Permite todos os headers
+//                        .exposedHeaders("Content-Disposition");
+//            }
+//        };
+//    }

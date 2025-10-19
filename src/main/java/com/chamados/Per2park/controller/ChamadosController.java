@@ -1,5 +1,6 @@
 package com.chamados.Per2park.controller;
 
+import com.chamados.Per2park.controller.RequestDTO.AssistanceCallResponseDTO;
 import com.chamados.Per2park.controller.RequestDTO.MonitorServerRequestDTO;
 import com.chamados.Per2park.controller.RequestDTO.RequestAutentica;
 import com.chamados.Per2park.controller.ResponseDTO.ChamadoBaseDTO;
@@ -9,6 +10,7 @@ import com.chamados.Per2park.service.ApiService;
 import com.chamados.Per2park.service.MonitorServerService;
 import com.chamados.Per2park.service.SeparaStatusChamados;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,13 +33,14 @@ public class ChamadosController {
     }
 
     @PostMapping("/login")
-    public void autentica(@RequestBody RequestAutentica dados, HttpSession session) {
+    public ResponseEntity<?> autentica(@RequestBody RequestAutentica dados, HttpSession session) {
 
         TokenDTO resp = apiService.ServiceAutentica(dados);
-        // Salva o token na sessão
+
         session.setAttribute("TOKEN_USUARIO", resp.getToken());
 
-//        return ResponseEntity.ok("ok");
+
+        return ResponseEntity.ok(resp.getUser());
 
     }
 
@@ -49,10 +52,10 @@ public class ChamadosController {
     }
 
     @GetMapping("/chamadosPorStatus")
-    public ResponseEntity<Map<String,Long>> chamadosPorStatus(HttpSession session){
+    public ResponseEntity<Map<String, Long>> chamadosPorStatus(HttpSession session) {
         String token = (String) session.getAttribute("TOKEN_USUARIO");
-        Map<String, Long> a =  separaStatusChamados.getTotalQuantidadePorStatus(token);
-        a.forEach((Nome,quantidade)-> System.out.println(Nome+": "+quantidade));
+        Map<String, Long> a = separaStatusChamados.getTotalQuantidadePorStatus(token);
+        a.forEach((Nome, quantidade) -> System.out.println(Nome + ": " + quantidade));
 
 
         return ResponseEntity.ok(a);
@@ -60,35 +63,35 @@ public class ChamadosController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<List<ChamadoBaseDTO>> status(@RequestParam int valor, HttpSession session){
+    public ResponseEntity<List<ChamadoBaseDTO>> status(@RequestParam int valor, HttpSession session) {
         String token = (String) session.getAttribute("TOKEN_USUARIO");
-       List<ChamadoBaseDTO> da = separaStatusChamados.getChamadosPorStatus(token, valor);
+        List<ChamadoBaseDTO> da = separaStatusChamados.getChamadosPorStatus(token, valor);
 
         return ResponseEntity.ok(da);
     }
 
     @GetMapping("/locais")
-    public ResponseEntity<List<Map.Entry<String,Long>>> locais(HttpSession session){
+    public ResponseEntity<List<Map.Entry<String, Long>>> locais(HttpSession session) {
         String token = (String) session.getAttribute("TOKEN_USUARIO");
 
-        List<Map.Entry<String,Long>> w = separaStatusChamados.getTop10Locais(token);
+        List<Map.Entry<String, Long>> w = separaStatusChamados.getTop10Locais(token);
 
-        w.forEach((s-> System.out.println(s)));
+        w.forEach((s -> System.out.println(s)));
 
         return ResponseEntity.ok(w);
     }
 
     @GetMapping("/replicacao")
-    public ResponseEntity<List<MonitorServerResponseDTO>> monitorServer(HttpSession session){
+    public ResponseEntity<List<MonitorServerResponseDTO>> monitorServer(HttpSession session) {
         String token = (String) session.getAttribute("TOKEN_USUARIO");
 
-       List<MonitorServerResponseDTO> resposta = monitorServerService.monitoramentoReplicacaoService(token);
+        List<MonitorServerResponseDTO> resposta = monitorServerService.monitoramentoReplicacaoService(token);
 
         return ResponseEntity.ok(resposta);
     }
 
     @GetMapping("/geral")
-    public ResponseEntity<List<MonitorServerRequestDTO>> monitorServerGeral(HttpSession session){
+    public ResponseEntity<List<MonitorServerRequestDTO>> monitorServerGeral(HttpSession session) {
         String token = (String) session.getAttribute("TOKEN_USUARIO");
 
         List<MonitorServerRequestDTO> resposta = monitorServerService.monitoramentoServerGeralService(token);
@@ -96,8 +99,31 @@ public class ChamadosController {
         return ResponseEntity.ok(resposta);
     }
 
+    @GetMapping("/detalhes_chamado/{id}")
+    public ResponseEntity<AssistanceCallResponseDTO> status_chamado(HttpSession session, @PathVariable Long id) {
+        String token = (String) session.getAttribute("TOKEN_USUARIO");
+
+        System.out.println("Id do chamado: " + id);
 
 
+        AssistanceCallResponseDTO a = apiService.DetalhesChamadoService(token, id);
+        return ResponseEntity.ok(a);
+    }
+
+    @PutMapping("/update_chamado")
+    public ResponseEntity<String> update_chamado (HttpSession session, @RequestBody AssistanceCallResponseDTO dados){
+        String token = (String) session.getAttribute("TOKEN_USUARIO");
+
+        System.out.println(dados);
+
+       Boolean atualizado = apiService.UpdateChamadoService(token, dados);
+
+        if (atualizado != null && atualizado) {
+            return ResponseEntity.ok("Chamado atualizado com sucesso");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Falha ao atualizar chamado");
+        }
+    }
 
 
 }

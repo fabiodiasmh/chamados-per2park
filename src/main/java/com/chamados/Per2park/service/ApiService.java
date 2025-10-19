@@ -1,5 +1,6 @@
 package com.chamados.Per2park.service;
 
+import com.chamados.Per2park.controller.RequestDTO.AssistanceCallResponseDTO;
 import com.chamados.Per2park.controller.RequestDTO.RequestAutentica;
 import com.chamados.Per2park.controller.RequestDTO.RequestChamados;
 import com.chamados.Per2park.controller.RequestDTO.StatusDTO;
@@ -7,14 +8,17 @@ import com.chamados.Per2park.controller.ResponseDTO.ChamadoBaseDTO;
 import com.chamados.Per2park.controller.ResponseDTO.ChamadosAgrupadosPorStatusDTO;
 import com.chamados.Per2park.controller.ResponseDTO.TokenDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +42,56 @@ public class ApiService {
     @Autowired
     private ObjectMapper objectMapper; // Injetado pelo Spring Boot
 
+    public AssistanceCallResponseDTO DetalhesChamadoService(String token, Long id){
+            try {
+                // Faz a chamada GET e recebe como String (para processar manualmente)
+                String jsonResponse = webClientChamados.get()
+                        .uri("/api/v0/AssistanceCall/getAssistanceCall/{id}", id)
+                        .header("Authorization", "Bearer " + token)
+                        .retrieve()
+                        .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                                response -> response.bodyToMono(String.class)
+                                        .flatMap(body -> Mono.error(new RuntimeException("Erro API ao buscar chamado " + id + ": " + body))))
+                        .bodyToMono(String.class)
+                        .block(); // modo síncrono
+
+                if (jsonResponse == null || jsonResponse.trim().isEmpty()) {
+                    throw new RuntimeException("Resposta vazia ao buscar chamado " + id);
+                }
+                System.out.println(objectMapper.readValue(jsonResponse, AssistanceCallResponseDTO.class));
+                // Desserializa para ChamadoBaseDTO (Jackson ignora campos extras)
+                return objectMapper.readValue(jsonResponse, AssistanceCallResponseDTO.class);
+
+            } catch (Exception e) {
+                throw new RuntimeException("Erro ao buscar ou desserializar chamado " + id + ": " + e.getMessage(), e);
+            }
+
+
+    }
+
+    public Boolean UpdateChamadoService(String token, AssistanceCallResponseDTO dados) {
+        try {
+            Boolean apiResponse = webClientChamados
+                    .put()
+                    .uri("/api/v0/AssistanceCall/updateAssistanceCall")
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(dados)
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class) // ← "response" aqui é o parâmetro da lambda (ok!)
+                                    .flatMap(body -> Mono.error(new RuntimeException("Erro API ao atualizar chamado: " + body)))
+                    )
+                    .bodyToMono(Boolean.class) // <--- aqui pegamos qualquer tipo
+                    .block();
+
+            return apiResponse; // ← nome único
+
+        } catch (Exception e) {
+            throw new RuntimeException("Falha ao atualizar chamado", e);
+        }
+    }
     public TokenDTO ServiceAutentica(RequestAutentica dados) {
 
         try {
@@ -54,8 +108,18 @@ public class ApiService {
                     .bodyToMono(Object[].class)
                     .block();
 
-            String resultado = responseArray != null ? responseArray[1].toString() : null;
-            return new TokenDTO(resultado);
+            if (responseArray == null || responseArray.length < 2) {
+                throw new RuntimeException("Resposta inválida");
+            }
+
+//            String resultado = responseArray != null ? responseArray[1].toString() : null;
+//            return new TokenDTO(resultado);
+            // Converte o primeiro item (usuário) para JsonNode
+            JsonNode userNode = objectMapper.convertValue(responseArray[0], JsonNode.class);
+            String token = responseArray[1].toString();
+            System.out.println(userNode);
+            return new TokenDTO(token, userNode);
+
         } catch (WebClientResponseException.Unauthorized ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas para o serviço externo");
         } catch (WebClientResponseException ex) {
@@ -102,13 +166,9 @@ public class ApiService {
 
 
     }
+
     public ChamadosAgrupadosPorStatusDTO serviceGetChamadosAgrupados(String token) {
-//        List<ChamadoBaseDTO> chamados = ServiceGetChamados(token); // reutiliza o método acima
-//
-//        Map<Integer, List<ChamadoBaseDTO>> agrupado = chamados.stream()
-//                .collect(Collectors.groupingBy(ChamadoBaseDTO::getStatus));
-//
-//        return new ChamadosAgrupadosPorStatusDTO(agrupado);
+
 
         RequestChamados requestBody = new RequestChamados();
         requestBody.setListStatus(Arrays.asList(

@@ -35,6 +35,11 @@ public class CorsConfig {
                 registry.addMapping("/api/**")
                         .allowedOrigins(
                                 "http://localhost:9000",
+                                "http://10.6.10.73:9000",
+                                "http://10.6.102.9:9000",
+                                "http://10.6.10.60:9000",
+                                "http://10.6.10.147:9000",
+                                "http://10.6.10.56:9000",
                                 "http://192.168.0.155:9000",
                                 "https://chamados-per2park.web.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")

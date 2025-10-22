@@ -39,4 +39,14 @@ public class WebClientConfig {
                 .baseUrl("https://cloud.per2park.com.br:32203") // <-- ajuste o host
                 .build();
     }
+
+    @Bean
+    @Qualifier("webClientSAT")
+    public WebClient webClientSAT() {
+        return WebClient.builder()
+                .codecs(configurer ->
+                        configurer.defaultCodecs().maxInMemorySize(50* 1024 * 1024)) // 1 MB
+                .baseUrl("https://sat.perto.com.br/SAT.V2.API/api") // <-- ajuste o host
+                .build();
+    }
 }

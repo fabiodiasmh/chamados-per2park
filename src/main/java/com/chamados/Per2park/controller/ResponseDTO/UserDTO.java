@@ -1,5 +1,6 @@
 package com.chamados.Per2park.controller.ResponseDTO;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -28,6 +29,7 @@ public class UserDTO {
     @JsonProperty("IndActive")
     private Integer IndActive;
 
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonProperty("LastLogin")
     private LocalDate LastLogin;
 
@@ -46,6 +48,7 @@ public class UserDTO {
     @JsonProperty("UserType")
     private Object UserType;
 
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonProperty("Validate")
     private LocalDate Validate;
 }

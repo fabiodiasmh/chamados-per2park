@@ -3,9 +3,12 @@ package com.chamados.Per2park.controller;
 import com.chamados.Per2park.controller.RequestDTO.AssistanceCallResponseDTO;
 import com.chamados.Per2park.controller.RequestDTO.MonitorServerRequestDTO;
 import com.chamados.Per2park.controller.RequestDTO.RequestAutentica;
+import com.chamados.Per2park.controller.RequestDTO.UserSATDTO;
 import com.chamados.Per2park.controller.ResponseDTO.ChamadoBaseDTO;
 import com.chamados.Per2park.controller.ResponseDTO.MonitorServerResponseDTO;
 import com.chamados.Per2park.controller.ResponseDTO.TokenDTO;
+import com.chamados.Per2park.controller.ResponseDTO.TokenSatDTO;
+import com.chamados.Per2park.service.ApiSAT;
 import com.chamados.Per2park.service.ApiService;
 import com.chamados.Per2park.service.MonitorServerService;
 import com.chamados.Per2park.service.SeparaStatusChamados;
@@ -24,12 +27,13 @@ public class ChamadosController {
     private final ApiService apiService;
     private final SeparaStatusChamados separaStatusChamados;
     private final MonitorServerService monitorServerService;
+    private final ApiSAT apiSAT;
 
-
-    public ChamadosController(ApiService apiService, SeparaStatusChamados separaStatusChamados, MonitorServerService monitorServerService) {
+    public ChamadosController(ApiService apiService, SeparaStatusChamados separaStatusChamados, MonitorServerService monitorServerService, ApiSAT apiSAT) {
         this.apiService = apiService;
         this.separaStatusChamados = separaStatusChamados;
         this.monitorServerService = monitorServerService;
+        this.apiSAT = apiSAT;
     }
 
     @PostMapping("/login")
@@ -38,7 +42,6 @@ public class ChamadosController {
         TokenDTO resp = apiService.ServiceAutentica(dados);
 
         session.setAttribute("TOKEN_USUARIO", resp.getToken());
-
 
         return ResponseEntity.ok(resp.getUser());
 
@@ -57,9 +60,7 @@ public class ChamadosController {
         Map<String, Long> a = separaStatusChamados.getTotalQuantidadePorStatus(token);
         a.forEach((Nome, quantidade) -> System.out.println(Nome + ": " + quantidade));
 
-
         return ResponseEntity.ok(a);
-
     }
 
     @GetMapping("/status")
@@ -123,6 +124,17 @@ public class ChamadosController {
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Falha ao atualizar chamado");
         }
+    }
+
+    @PostMapping("/login_sat")
+    public ResponseEntity<TokenSatDTO> login_sat(@RequestBody UserSATDTO dados){
+        System.out.println("login no SAT");
+
+        TokenSatDTO token = apiSAT.autenticaSatService(dados);
+
+        return ResponseEntity.ok(token);
+
+
     }
 
 

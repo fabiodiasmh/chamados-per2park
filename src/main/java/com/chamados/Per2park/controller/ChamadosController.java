@@ -4,10 +4,7 @@ import com.chamados.Per2park.controller.RequestDTO.AssistanceCallResponseDTO;
 import com.chamados.Per2park.controller.RequestDTO.MonitorServerRequestDTO;
 import com.chamados.Per2park.controller.RequestDTO.RequestAutentica;
 import com.chamados.Per2park.controller.RequestDTO.UserSATDTO;
-import com.chamados.Per2park.controller.ResponseDTO.ChamadoBaseDTO;
-import com.chamados.Per2park.controller.ResponseDTO.MonitorServerResponseDTO;
-import com.chamados.Per2park.controller.ResponseDTO.TokenDTO;
-import com.chamados.Per2park.controller.ResponseDTO.TokenSatDTO;
+import com.chamados.Per2park.controller.ResponseDTO.*;
 import com.chamados.Per2park.service.ApiSAT;
 import com.chamados.Per2park.service.ApiService;
 import com.chamados.Per2park.service.MonitorServerService;
@@ -127,15 +124,23 @@ public class ChamadosController {
     }
 
     @PostMapping("/login_sat")
-    public ResponseEntity<TokenSatDTO> login_sat(@RequestBody UserSATDTO dados){
+    public ResponseEntity<List<?>> login_sat(@RequestParam String serie){
         System.out.println("login no SAT");
 
-        TokenSatDTO token = apiSAT.autenticaSatService(dados);
+        TokenSatDTO token = apiSAT.autenticaSatService();
 
-        return ResponseEntity.ok(token);
+       List<SatEquipamentoDTO> dd = apiSAT.verificaSerieSatService(token,serie);
+        System.out.println("dd: "+dd);
+        return ResponseEntity.ok(dd);
 
 
     }
+
+//    @GetMapping("/serie_sat")
+//    public ResponseEntity<?> serieSAT(){
+//
+//
+//    }
 
 
 }

@@ -64,7 +64,7 @@ public class ApiSAT {
         System.out.println("numero de serie: "+numSerie);
         try {
             SatEquipamentoResponse responseSAT = webClientSAT.get()
-                    .uri("/EquipamentoContrato?codClientes=755,521,532&pageSize=50&filter=" + numSerie)
+                    .uri("/EquipamentoContrato?codClientes=755,521,573,559,489,534,532,140,132&pageSize=50&filter=" + numSerie)
                     .header("Authorization", "Bearer " + token.getToken()) // 🔐
                     .retrieve()
                     .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),

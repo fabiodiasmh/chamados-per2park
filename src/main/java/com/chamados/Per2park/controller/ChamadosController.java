@@ -123,7 +123,7 @@ public class ChamadosController {
         }
     }
 
-    @PostMapping("/login_sat")
+    @GetMapping("/sat")
     public ResponseEntity<List<?>> login_sat(@RequestParam String serie){
         System.out.println("login no SAT");
 

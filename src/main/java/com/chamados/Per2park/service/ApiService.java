@@ -58,7 +58,7 @@ public class ApiService {
                 if (jsonResponse == null || jsonResponse.trim().isEmpty()) {
                     throw new RuntimeException("Resposta vazia ao buscar chamado " + id);
                 }
-                System.out.println(objectMapper.readValue(jsonResponse, AssistanceCallResponseDTO.class));
+//                System.out.println(objectMapper.readValue(jsonResponse, AssistanceCallResponseDTO.class));
                 // Desserializa para ChamadoBaseDTO (Jackson ignora campos extras)
                 return objectMapper.readValue(jsonResponse, AssistanceCallResponseDTO.class);
 
@@ -92,6 +92,7 @@ public class ApiService {
             throw new RuntimeException("Falha ao atualizar chamado", e);
         }
     }
+
     public TokenDTO ServiceAutentica(RequestAutentica dados) {
 
         try {
@@ -103,8 +104,6 @@ public class ApiService {
                     .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                             response -> response.bodyToMono(String.class)
                                     .map(body -> new RuntimeException("Erro API: " + body)))
-//                .bodyToMono(String.class)
-//                .block(); // bloqueia até receber resposta (modo síncrono)
                     .bodyToMono(Object[].class)
                     .block();
 
@@ -112,12 +111,11 @@ public class ApiService {
                 throw new RuntimeException("Resposta inválida");
             }
 
-//            String resultado = responseArray != null ? responseArray[1].toString() : null;
-//            return new TokenDTO(resultado);
             // Converte o primeiro item (usuário) para JsonNode
             JsonNode userNode = objectMapper.convertValue(responseArray[0], JsonNode.class);
             String token = responseArray[1].toString();
-            System.out.println(userNode);
+
+//            System.out.println(userNode);
             return new TokenDTO(token, userNode);
 
         } catch (WebClientResponseException.Unauthorized ex) {

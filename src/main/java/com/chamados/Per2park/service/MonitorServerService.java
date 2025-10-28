@@ -50,9 +50,9 @@ public class MonitorServerService {
                 .collect(Collectors.toList());
 
 //         ✅ Corrigido: usa getPendencias(), não getReplicacao()
-        resultado.forEach(w ->
-                System.out.println("Nome Unidade: " + w.getNomeUnidade() + ": " + w.getReplicacao().getPendencies())
-        );
+//        resultado.forEach(w ->
+//                System.out.println("Nome Unidade: " + w.getNomeUnidade() + ": " + w.getReplicacao().getPendencies())
+//        );
 
         return resultado;
     }
@@ -71,9 +71,9 @@ public class MonitorServerService {
                 .block();
 
 
-        resposta.forEach(w ->
-                System.out.println(": " + w.getNomeUnidade() + ": " + w.getReplicacao().getPendencies())
-        );
+//        resposta.forEach(w ->
+//                System.out.println(": " + w.getNomeUnidade() + ": " + w.getReplicacao().getPendencies())
+//        );
 
         return resposta;
 

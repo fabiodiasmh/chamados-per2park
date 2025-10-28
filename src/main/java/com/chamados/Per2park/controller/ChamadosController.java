@@ -55,7 +55,7 @@ public class ChamadosController {
     public ResponseEntity<Map<String, Long>> chamadosPorStatus(HttpSession session) {
         String token = (String) session.getAttribute("TOKEN_USUARIO");
         Map<String, Long> a = separaStatusChamados.getTotalQuantidadePorStatus(token);
-        a.forEach((Nome, quantidade) -> System.out.println(Nome + ": " + quantidade));
+//        a.forEach((Nome, quantidade) -> System.out.println(Nome + ": " + quantidade));
 
         return ResponseEntity.ok(a);
     }
@@ -74,7 +74,7 @@ public class ChamadosController {
 
         List<Map.Entry<String, Long>> w = separaStatusChamados.getTop10Locais(token);
 
-        w.forEach((s -> System.out.println(s)));
+//        w.forEach((s -> System.out.println(s)));
 
         return ResponseEntity.ok(w);
     }
@@ -101,7 +101,7 @@ public class ChamadosController {
     public ResponseEntity<AssistanceCallResponseDTO> status_chamado(HttpSession session, @PathVariable Long id) {
         String token = (String) session.getAttribute("TOKEN_USUARIO");
 
-        System.out.println("Id do chamado: " + id);
+//        System.out.println("Id do chamado: " + id);
 
 
         AssistanceCallResponseDTO a = apiService.DetalhesChamadoService(token, id);
@@ -112,7 +112,7 @@ public class ChamadosController {
     public ResponseEntity<String> update_chamado (HttpSession session, @RequestBody AssistanceCallResponseDTO dados){
         String token = (String) session.getAttribute("TOKEN_USUARIO");
 
-        System.out.println(dados);
+//        System.out.println(dados);
 
        Boolean atualizado = apiService.UpdateChamadoService(token, dados);
 
@@ -125,12 +125,12 @@ public class ChamadosController {
 
     @GetMapping("/sat")
     public ResponseEntity<List<?>> login_sat(@RequestParam String serie){
-        System.out.println("login no SAT");
+//        System.out.println("login no SAT");
 
         TokenSatDTO token = apiSAT.autenticaSatService();
 
        List<SatEquipamentoDTO> dd = apiSAT.verificaSerieSatService(token,serie);
-        System.out.println("dd: "+dd);
+//        System.out.println("dd: "+dd);
         return ResponseEntity.ok(dd);
 
 

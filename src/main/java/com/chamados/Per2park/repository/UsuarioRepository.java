@@ -1,5 +1,6 @@
 package com.chamados.Per2park.repository;
 
+import com.chamados.Per2park.controller.UserPgDTO;
 import com.chamados.Per2park.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

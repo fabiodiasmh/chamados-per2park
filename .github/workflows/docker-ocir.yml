@@ -1,4 +1,4 @@
-name: Build and Push to OCIR
+name: Build & Push Docker Image
 
 on:
   push:
@@ -22,8 +22,9 @@ jobs:
       - name: Configurar versão automática
         id: version
         run: |
-          # Gera versão baseada no número da execução + hash curto do commit
-          VERSION=v1.0.${{ github.run_number }}-${{ github.sha::7 }}
+          # Gera versão com número da execução + hash curto do commit
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          VERSION="v1.0.${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Versão gerada: $VERSION"
 

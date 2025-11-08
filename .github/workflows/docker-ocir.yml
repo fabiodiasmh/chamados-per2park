@@ -1,0 +1,46 @@
+name: Build & Push Docker Image to OCIR
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch: # Permite executar manualmente
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Faz checkout do código
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Login no Oracle Cloud Infrastructure Registry (OCIR)
+      - name: Login to OCIR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.OCI_REGION }}.ocir.io
+          username: ${{ secrets.OCI_TENANCY_NAMESPACE }}/$${{ secrets.OCI_USERNAME }}
+          password: ${{ secrets.OCI_AUTH_TOKEN }}
+
+      # 3️⃣ Define variáveis de versão e imagem
+      - name: Set image name and version
+        id: vars
+        run: |
+          IMAGE_NAME=${{ secrets.OCI_REGION }}.ocir.io/${{ secrets.OCI_TENANCY_NAMESPACE }}/per2park-app-chamados
+          VERSION=${GITHUB_REF##*/} # pega o nome da tag (ex: v1.0.0) ou branch
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # 4️⃣ Build e Push da imagem Docker
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+            ${{ env.IMAGE_NAME }}:latest

@@ -22,11 +22,20 @@ jobs:
       - name: Configurar versão automática
         id: version
         run: |
-          # Gera versão com número da execução + hash curto do commit
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
           VERSION="v1.0.${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Versão gerada: $VERSION"
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build do projeto com Maven
+        run: |
+          mvn clean package -DskipTests
 
       - name: Login no OCIR
         run: |

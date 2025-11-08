@@ -1,46 +1,50 @@
-name: Build & Push Docker Image to OCIR
+name: Build and Push to OCIR
 
 on:
   push:
-    branches:
-      - main
-    tags:
-      - 'v*'
-  workflow_dispatch: # Permite executar manualmente
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  APP_NAME: per2park-app-chamados
+  REGION: ${{ secrets.OCI_REGION }}
+  TENANCY: grolj6ywhill
+  IMAGE_BASE: ${{ secrets.OCI_REGION }}.ocir.io/grolj6ywhill/per2park-app-chamados
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Faz checkout do código
-      - name: Checkout source code
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      # 2️⃣ Login no Oracle Cloud Infrastructure Registry (OCIR)
-      - name: Login to OCIR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.OCI_REGION }}.ocir.io
-          username: ${{ secrets.OCI_TENANCY_NAMESPACE }}/$${{ secrets.OCI_USERNAME }}
-          password: ${{ secrets.OCI_AUTH_TOKEN }}
-
-      # 3️⃣ Define variáveis de versão e imagem
-      - name: Set image name and version
-        id: vars
+      - name: Configurar versão automática
+        id: version
         run: |
-          IMAGE_NAME=${{ secrets.OCI_REGION }}.ocir.io/${{ secrets.OCI_TENANCY_NAMESPACE }}/per2park-app-chamados
-          VERSION=${GITHUB_REF##*/} # pega o nome da tag (ex: v1.0.0) ou branch
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          # Gera versão baseada no número da execução + hash curto do commit
+          VERSION=v1.0.${{ github.run_number }}-${{ github.sha::7 }}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Versão gerada: $VERSION"
 
-      # 4️⃣ Build e Push da imagem Docker
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-            ${{ env.IMAGE_NAME }}:latest
+      - name: Login no OCIR
+        run: |
+          echo "${{ secrets.OCI_AUTH_TOKEN }}" | docker login \
+            ${{ env.REGION }}.ocir.io \
+            -u "${{ secrets.OCI_USER }}" \
+            --password-stdin
+
+      - name: Build da imagem Docker
+        run: |
+          docker build -t ${{ env.IMAGE_BASE }}:latest .
+          docker tag ${{ env.IMAGE_BASE }}:latest ${{ env.IMAGE_BASE }}:${{ env.VERSION }}
+
+      - name: Push das imagens para OCIR
+        run: |
+          docker push ${{ env.IMAGE_BASE }}:latest
+          docker push ${{ env.IMAGE_BASE }}:${{ env.VERSION }}
+
+      - name: Exibir versão final publicada
+        run: |
+          echo "Imagem publicada com sucesso:"
+          echo "${{ env.IMAGE_BASE }}:${{ env.VERSION }}"

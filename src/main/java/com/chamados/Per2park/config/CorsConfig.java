@@ -61,10 +61,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("*")          // ✅ qualquer origem
+                        .allowedOrigins("https://chamados-per2park.web.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("Authorization", "Content-Type") // ✅ mais seguro que "*"
-                // .allowCredentials(true) — NÃO use com "*"
+                        .allowCredentials(true)  // ✅ agora pode, pois origens são explícitas
                 ;
             }
         };

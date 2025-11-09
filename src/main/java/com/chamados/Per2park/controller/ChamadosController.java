@@ -37,11 +37,11 @@ public class ChamadosController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> autentica(@RequestBody RequestAutentica dados, HttpSession session) {
+    public ResponseEntity<?> autentica(@RequestBody RequestAutentica dados) {
 
         TokenDTO resp = apiService.ServiceAutentica(dados);
 
-        session.setAttribute("TOKEN_USUARIO", resp.getToken());
+//        session.setAttribute("TOKEN_USUARIO", resp.getToken());
 
         return ResponseEntity.ok(resp);
 

@@ -9,11 +9,24 @@ import com.chamados.Per2park.service.ApiSAT;
 import com.chamados.Per2park.service.ApiService;
 import com.chamados.Per2park.service.MonitorServerService;
 import com.chamados.Per2park.service.SeparaStatusChamados;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+//import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +35,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+
+@Tag(name = "Chamados", description = "Endpoints para gestão de chamados e monitoramento de servidores")
 public class ChamadosController {
 
     private final ApiService apiService;
@@ -36,17 +51,44 @@ public class ChamadosController {
         this.apiSAT = apiSAT;
     }
 
+    // ✅ Login (sem autenticação prévia)
+    @Operation(
+            summary = "Autenticação do usuário",
+            description = "Realiza login no sistema e retorna um token JWT de acesso para uso nas demais rotas."
+
+
+    )
     @PostMapping("/login")
     public ResponseEntity<?> autentica(@RequestBody RequestAutentica dados) {
 
         TokenDTO resp = apiService.ServiceAutentica(dados);
 
-//        session.setAttribute("TOKEN_USUARIO", resp.getToken());
-
         return ResponseEntity.ok(resp);
 
     }
 
+
+    // ✅ Listar todos os chamados (requer Bearer token)
+    @Operation(
+            summary = "Lista todos os chamados",
+            description = "Retorna a lista completa de chamados do usuário autenticado. Requer token JWT válido no header `Authorization: Bearer <token>`.",
+            security = @SecurityRequirement(name = "bearerAuth")
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "Lista de chamados retornada com sucesso",
+//                            content = @Content(mediaType = "application/json",
+//                                    array = @ArraySchema(schema = @Schema(implementation = ChamadoBaseDTO.class)))),
+//                    @ApiResponse(responseCode = "401", description = "Token ausente, inválido ou expirado",
+//                            headers = @Header(name = "WWW-Authenticate", description = "Ex: Bearer realm=\"api\"")),
+//                    @ApiResponse(responseCode = "502", description = "Falha na comunicação com o serviço externo de chamados")
+//            }
+    )
+    @Parameter(
+            name = "Authorization",
+            description = "Token JWT no formato `Bearer <token>`",
+            in = ParameterIn.HEADER,
+            required = true,
+            schema = @Schema(type = "string", example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx")
+    )
     @GetMapping("/chamados")
     public ResponseEntity<List<ChamadoBaseDTO>> getChamados(
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -120,6 +162,26 @@ public class ChamadosController {
 //
 //        return ResponseEntity.ok(a);
 //    }
+// ✅ Quantidade de chamados por status
+@Operation(
+        summary = "Contagem de chamados por status",
+        description = "Retorna um mapa com a quantidade de chamados em cada status (ex: 'ABERTO', 'EM ANDAMENTO', 'FECHADO').",
+        security = @SecurityRequirement(name = "bearerAuth")
+)
+@ApiResponse(responseCode = "200", description = "Mapa de contagem retornado com sucesso",
+        content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = Map.class, example = """
+                {
+                  "ABERTO": 12,
+                  "EM ANDAMENTO": 5,
+                  "FECHADO": 30
+                }
+                """)))
+@ApiResponse(responseCode = "401", description = "Não autorizado")
+@ApiResponse(responseCode = "502", description = "Erro ao consultar serviço externo")
+@Parameter(name = "Authorization", in = ParameterIn.HEADER, required = true,
+        schema = @Schema(type = "string", example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx"))
+
 @GetMapping("/chamadosPorStatus")
 public ResponseEntity<Map<String, Long>> chamadosPorStatus(
         @RequestHeader(value = "Authorization", required = false) String authHeader) {

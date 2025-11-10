@@ -16,14 +16,14 @@ server:
     include-stacktrace: never
   forward-headers-strategy: NATIVE
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui/index.html
-    display-request-duration: true
-    doc-expansion: none
-    operations-sorter: method
-    tags-sorter: alpha
-    syntax-highlight:
-      theme: monokai
-    title: "🚀 API - Chamados"
-    description: "Documentação da API de chamados"
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui/index.html
+#    display-request-duration: true
+#    doc-expansion: none
+#    operations-sorter: method
+#    tags-sorter: alpha
+#    syntax-highlight:
+#      theme: monokai
+#    title: "🚀 API - Chamados"
+#    description: "Documentação da API de chamados"

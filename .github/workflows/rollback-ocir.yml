@@ -39,9 +39,9 @@ jobs:
       - name: Deploy na instância OCI
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.OCI_HOST }}
-          username: ubuntu
-          key: ${{ secrets.OCI_SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             cd /home/ubuntu/chamados-stack
             docker compose down
@@ -51,8 +51,9 @@ jobs:
 
       - name: Enviar alerta para o Telegram
         run: |
-          MESSAGE="🚨 *Rollback executado com sucesso!*\n\nAplicação: \`${{ env.APP_NAME }}\`\nVersão restaurada: \`${{ env.VERSION }}\`\nHost: \`${{ secrets.OCI_HOST }}\`\nHora: $(date '+%d/%m/%Y %H:%M:%S')"
+          DATA=$(date '+%d/%m/%Y %H:%M:%S')
+          MESSAGE="⚠️ *Rollback executado com sucesso!*%0A%0A📦 *Aplicação:* \`${{ env.APP_NAME }}\`%0A🔁 *Versão restaurada:* \`${{ env.VERSION }}\`%0A🕒 *Data/Hora:* ${DATA}%0A🌐 *Host:* \`${{ secrets.OCI_HOST }}\`"
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="$MESSAGE" \
-            -d parse_mode="Markdown"
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d text="$MESSAGE" \
+          -d parse_mode="Markdown"

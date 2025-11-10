@@ -112,11 +112,12 @@ jobs:
       - name: Enviar alerta Telegram - sucesso
         if: success()
         run: |
-          MESSAGE="✅ *Deploy concluído com sucesso!*\n\n📦 Versão: \`${{ env.VERSION }}\`\n🔗 [Ver commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+          DATA=$(date '+%d/%m/%Y %H:%M:%S')
+          MESSAGE="🚀 *Deploy concluído com sucesso!*%0A%0A📦 *Aplicação:* \`${{ env.APP_NAME }}\`%0A🧩 *Versão:* \`${{ env.VERSION }}\`%0A🕒 *Data/Hora:* ${DATA}%0A🔗 [Ver commit](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA})"
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode=Markdown \
-            -d text="$MESSAGE"
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d text="$MESSAGE" \
+          -d parse_mode="Markdown"
 
       # ❌ Envia alerta de falha no Telegram
       - name: Enviar alerta Telegram - falha

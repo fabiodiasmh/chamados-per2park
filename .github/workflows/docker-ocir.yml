@@ -72,6 +72,7 @@ jobs:
 
     steps:
       - name: Conectar via SSH e realizar deploy com rollback automático
+        id: deploy
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -79,10 +80,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             set -e
-            cd /home/ubuntu/chamados-stack  # ajuste o caminho do seu projeto
+            cd /home/ubuntu/chamados-stack
 
-            echo "=== Iniciando deploy ==="
-            echo "Efetuando login no OCIR..."
+            echo "=== Iniciando deploy da versão ${{ env.VERSION }} ==="
             echo "${{ secrets.OCI_AUTH_TOKEN }}" | docker login \
               ${{ secrets.OCI_REGION }}.ocir.io \
               -u "${{ secrets.OCI_USER }}" \
@@ -93,7 +93,6 @@ jobs:
             docker tag ${{ secrets.OCI_REGION }}.ocir.io/grolj6ywhill/per2park-app-chamados:latest backup_prev:latest || true
 
             echo "Atualizando containers..."
-            docker compose down
             if docker compose pull && docker compose up -d; then
               echo "✅ Deploy concluído com sucesso."
               docker image prune -f
@@ -108,6 +107,27 @@ jobs:
                 echo "⚠️ Nenhum backup encontrado para rollback."
               fi
             fi
+
+      # ✅ Envia alerta de sucesso no Telegram
+      - name: Enviar alerta Telegram - sucesso
+        if: success()
+        run: |
+          MESSAGE="✅ *Deploy concluído com sucesso!*\n\n📦 Versão: \`${{ env.VERSION }}\`\n🔗 [Ver commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d parse_mode=Markdown \
+            -d text="$MESSAGE"
+
+      # ❌ Envia alerta de falha no Telegram
+      - name: Enviar alerta Telegram - falha
+        if: failure()
+        run: |
+          MESSAGE="🚨 *Falha no deploy!*\nRollback pode ter sido acionado.\n\n📦 Versão: \`${{ env.VERSION }}\`\n🔗 [Ver commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d parse_mode=Markdown \
+            -d text="$MESSAGE"
+
 
 
 #name: Build & Push Docker Image with Rollback

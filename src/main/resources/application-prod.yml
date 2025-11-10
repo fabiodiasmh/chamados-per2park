@@ -1,0 +1,69 @@
+# Perfil: produção (HTTPS, segurança, robustez)
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update  # ou none — nunca update/ create em prod!
+
+  app:
+    base-url: https://dias.app.br
+
+#server:
+#  port: 443
+#  ssl:
+#    enabled: true
+#    key-store: ${SERVER_SSL_KEYSTORE:/etc/ssl/keystore.p12}
+#    key-store-password: ${SERVER_SSL_KEYSTORE_PASSWORD}
+#    key-store-type: PKCS12
+#    key-alias: ${SERVER_SSL_KEY_ALIAS:tomcat}
+
+  # Redireciona HTTP (8080) → HTTPS (443) automaticamente
+  # (requer um conector HTTP adicional — veja nota abaixo ⚠️)
+  # Alternativa: faça o redirecionamento no proxy reverso (Nginx, Caddy, etc.)
+
+# Configuração do conector HTTP adicional (opcional, para redirecionamento interno)
+# ⚠️ Só use se não tiver proxy reverso (ex: Nginx). Recomendo usar proxy em vez disso.
+# server:
+#   tomcat:
+#     additional-tld-skip-patterns: "*.jar"
+# ---
+# Para ativar redirecionamento HTTP→HTTPS no Spring Boot (sem proxy):
+# - Descomente e adicione este trecho em application-prod.yml:
+# (fonte: Spring Boot docs — "Enable HTTP to HTTPS redirection")
+
+# @Bean
+# public ServletWebServerFactory servletContainer() {
+#   TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+#     @Override
+#     protected void postProcessContext(Context context) {
+#       SecurityConstraint securityConstraint = new SecurityConstraint();
+#       securityConstraint.setUserConstraint("CONFIDENTIAL");
+#       SecurityCollection collection = new SecurityCollection();
+#       collection.addPattern("/*");
+#       securityConstraint.addCollection(collection);
+#       context.addConstraint(securityConstraint);
+#     }
+#   };
+#   tomcat.addAdditionalTomcatConnectors(redirectConnector());
+#   return tomcat;
+# }
+#
+# private Connector redirectConnector() {
+#   Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+#   connector.setScheme("http");
+#   connector.setPort(8080);
+#   connector.setSecure(false);
+#   connector.setRedirectPort(443);
+#   return connector;
+# }
+
+# Sugestão: use proxy reverso (ex: Nginx em seu servidor) para TLS e redirecionamento — mais seguro e flexível.

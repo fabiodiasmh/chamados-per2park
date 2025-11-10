@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: Per2park
+
+spring.profiles.active: dev  # ← só define o *perfil padrão*; pode ser sobrescrito por `SPRING_PROFILES_ACTIVE=prod`
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+server:
+  address: 0.0.0.0
+  error:
+    include-stacktrace: never
+  forward-headers-strategy: NATIVE
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui/index.html
+    display-request-duration: true
+    doc-expansion: none
+    operations-sorter: method
+    tags-sorter: alpha
+    syntax-highlight:
+      theme: monokai
+    title: "🚀 API - Chamados"
+    description: "Documentação da API de chamados"

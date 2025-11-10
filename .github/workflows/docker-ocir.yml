@@ -71,50 +71,44 @@ jobs:
     needs: build-and-push
 
     steps:
-      - name: Conectar via SSH e atualizar containers
+      - name: Conectar via SSH e realizar deploy com rollback automático
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo "=== Realizando deploy do container ==="
-            cd /home/ubuntu/chamados-stack  # <- ajuste o caminho do seu projeto
-            echo "Logando no OCIR..."
+            set -e
+            cd /home/ubuntu/chamados-stack  # ajuste o caminho do seu projeto
+
+            echo "=== Iniciando deploy ==="
+            echo "Efetuando login no OCIR..."
             echo "${{ secrets.OCI_AUTH_TOKEN }}" | docker login \
-              ${{ env.REGION }}.ocir.io \
+              ${{ secrets.OCI_REGION }}.ocir.io \
               -u "${{ secrets.OCI_USER }}" \
               --password-stdin
+
+            echo "Salvando backup da imagem atual..."
+            docker pull ${{ secrets.OCI_REGION }}.ocir.io/grolj6ywhill/per2park-app-chamados:latest || true
+            docker tag ${{ secrets.OCI_REGION }}.ocir.io/grolj6ywhill/per2park-app-chamados:latest backup_prev:latest || true
+
             echo "Atualizando containers..."
             docker compose down
-            docker compose pull
-            docker compose up -d
-            docker image prune -f
-            echo "Deploy concluído com sucesso ✅"
+            if docker compose pull && docker compose up -d; then
+              echo "✅ Deploy concluído com sucesso."
+              docker image prune -f
+            else
+              echo "❌ Falha no deploy. Iniciando rollback..."
+              if docker image inspect backup_prev:latest > /dev/null 2>&1; then
+                docker tag backup_prev:latest ${{ secrets.OCI_REGION }}.ocir.io/grolj6ywhill/per2park-app-chamados:latest
+                docker compose down
+                docker compose up -d
+                echo "🔁 Rollback realizado com sucesso — sistema restaurado à versão anterior."
+              else
+                echo "⚠️ Nenhum backup encontrado para rollback."
+              fi
+            fi
 
-  rollback:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    if: failure()
-
-    steps:
-      - name: Login no OCIR
-        run: |
-          echo "${{ secrets.OCI_AUTH_TOKEN }}" | docker login \
-            ${{ env.REGION }}.ocir.io \
-            -u "${{ secrets.OCI_USER }}" \
-            --password-stdin
-
-      - name: Rollback para versão anterior
-        run: |
-          echo "Rollback iniciado..."
-          if docker image inspect previous_backup:latest > /dev/null 2>&1; then
-            docker tag previous_backup:latest ${{ env.IMAGE_BASE }}:latest
-            docker push ${{ env.IMAGE_BASE }}:latest
-            echo "Rollback concluído. Imagem anterior restaurada como 'latest'."
-          else
-            echo "Nenhuma imagem anterior encontrada. Rollback ignorado."
-          fi
 
 #name: Build & Push Docker Image with Rollback
 #

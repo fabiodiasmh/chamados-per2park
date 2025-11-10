@@ -235,13 +235,17 @@ public ResponseEntity<Map<String, Long>> chamadosPorStatus(
     public ResponseEntity<String> update_chamado(
             @RequestBody AssistanceCallResponseDTO dados,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
+        System.out.println("inicio update_chamado");
         String token = extractAndValidateToken(authHeader);
         try {
+            System.out.println("estou no try do update chamados service");
             Boolean atualizado = apiService.UpdateChamadoService(token, dados);
             if (Boolean.TRUE.equals(atualizado)) {
+                System.out.println("if do update chamado");
                 return ResponseEntity.ok("Chamado atualizado com sucesso");
+
             } else {
+                System.out.println("else do update chamado");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Falha ao atualizar chamado");
             }

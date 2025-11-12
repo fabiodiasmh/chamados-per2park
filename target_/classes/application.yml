@@ -14,11 +14,6 @@ spring:
   jackson:
     time-zone: America/Sao_Paulo
 
-  flyway:
-    enabled: false
-    locations: classpath:db/migration
-    database: postgresql  # ← 🔑 Esta é a correção-chave!
-
 management:
   endpoints:
     web:

@@ -1,4 +1,8 @@
-# Perfil: desenvolvimento (localhost, debug-friendly)
+# ==========================================================
+# 🧩 Perfil: Desenvolvimento (localhost, debug-friendly)
+# Arquivo: src/main/resources/application-dev.yml
+# ==========================================================
+
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
@@ -8,14 +12,25 @@ spring:
 
   jpa:
     show-sql: true
+    hibernate:
+      ddl-auto: update  # ✅ Cria/atualiza tabelas automaticamente em DEV
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        # Opcional: formatar SQL no log
-        format_sql: true
-    hibernate:
-      ddl-auto: update  # OK em dev
+        format_sql: true  # Facilita leitura no log
+
+  flyway:
+    enabled: false
+    baseline-on-migrate: true  # Evita erro se DB já tiver tabelas
+    locations: classpath:db/migration
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org.springframework.web: info
 
 server:
-  #port: 8085
-  # HTTP apenas em dev
+  port: 8080  # Pode mudar pra evitar conflito com outras apps
+  error:
+    include-message: always

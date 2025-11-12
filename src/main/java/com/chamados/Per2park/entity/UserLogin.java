@@ -30,9 +30,6 @@ public class UserLogin {
     @Column(columnDefinition = "TEXT")
     private String user_agent;
 
-    @Column(columnDefinition = "TEXT")
-    private String token_acesso;
-
     @CreationTimestamp
     private LocalDateTime data_acesso; // ← data e hora automáticas
 }

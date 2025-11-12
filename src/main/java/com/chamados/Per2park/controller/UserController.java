@@ -1,12 +1,15 @@
 package com.chamados.Per2park.controller;
 
-import com.chamados.Per2park.controller.RequestDTO.AssistanceCallResponseDTO;
-import com.chamados.Per2park.entity.User;
+import com.chamados.Per2park.entity.Chamado;
 import com.chamados.Per2park.entity.UserLogin;
+import com.chamados.Per2park.entity.Usuario;
 import com.chamados.Per2park.service.ApiService;
 import com.chamados.Per2park.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -21,16 +24,13 @@ public class UserController {
     }
 
 
-    @PostMapping("/insert_usuario")
-    public void tes(@RequestBody User dados){
-//        User a = new User();
-//        a.setNome("Fabio Dias");
-//        a.setEmail("fabio@fabiodias");
-//        a.setNome(dados.getNome());
-//        a.setEmail(dados.getEmail());
+    @PostMapping("/insert_chamado")
+    public ResponseEntity<String> tes(@RequestBody Chamado dados){
 
-usuarioService.salvar(dados);
 
+    usuarioService.salva_chamado(dados);
+
+        return  ResponseEntity.ok("Chamado inserido no banco");
     }
 
     @PostMapping("/user_login")
@@ -46,12 +46,9 @@ usuarioService.salvar(dados);
         userlogin.setNome(dados.getNome());
         userlogin.setEmail(dados.getEmail());
         userlogin.setUsuario_id(dados.getUsuario_id()); // se existir
-        userlogin.setToken_acesso(dados.getToken_acesso()); // se existir
+//        userlogin.setToken_acesso(dados.getToken_acesso()); // se existir
         userlogin.setIp_origem(ipOrigem);
         userlogin.setUser_agent(userAgent);
-
-
-
 
         usuarioService.salvarLogin(userlogin);
     }
@@ -63,6 +60,19 @@ usuarioService.salvar(dados);
             return forwarded.split(",")[0];
         }
         return request.getRemoteAddr();
+    }
+
+    @PostMapping("/load_meus_chamados")
+    public ResponseEntity<List<Chamado>> meus_chamados(@RequestBody Usuario dados){
+        List<Chamado> chamados = usuarioService.busca_meus_chamados_service(dados);
+        System.out.println(dados);
+        System.out.println(dados);
+        System.out.println(dados);
+        System.out.println(dados);
+        System.out.println(dados);
+        System.out.println("Id do usuario recebido front: "+dados.getId());
+        return ResponseEntity.ok(chamados);
+
     }
 
 }

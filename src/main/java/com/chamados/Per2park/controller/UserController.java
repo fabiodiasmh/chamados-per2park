@@ -1,11 +1,11 @@
 package com.chamados.Per2park.controller;
 
-import com.chamados.Per2park.entity.Chamado;
-import com.chamados.Per2park.entity.UserLogin;
-import com.chamados.Per2park.entity.Usuario;
+import com.chamados.Per2park.controller.RequestDTO.MeusChamadosRequestDTO;
+import com.chamados.Per2park.entity.*;
 import com.chamados.Per2park.service.ApiService;
 import com.chamados.Per2park.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,10 +25,12 @@ public class UserController {
 
 
     @PostMapping("/insert_chamado")
-    public ResponseEntity<String> tes(@RequestBody Chamado dados){
+    public ResponseEntity<String> tes(@Valid @RequestBody ChamadoInputDTO dados){
+        System.out.println("recebendo "+ dados);
+        System.out.println("recebendo "+ dados);
+        System.out.println("recebendo "+ dados);
 
-
-    usuarioService.salva_chamado(dados);
+    usuarioService.salvaChamado(dados);
 
         return  ResponseEntity.ok("Chamado inserido no banco");
     }
@@ -63,13 +65,9 @@ public class UserController {
     }
 
     @PostMapping("/load_meus_chamados")
-    public ResponseEntity<List<Chamado>> meus_chamados(@RequestBody Usuario dados){
-        List<Chamado> chamados = usuarioService.busca_meus_chamados_service(dados);
-        System.out.println(dados);
-        System.out.println(dados);
-        System.out.println(dados);
-        System.out.println(dados);
-        System.out.println(dados);
+    public ResponseEntity<List<ChamadoDTO>> meus_chamados(@Valid @RequestBody MeusChamadosRequestDTO dados){
+        List<ChamadoDTO> chamados = usuarioService.buscaMeusChamadosDto(dados.getId());
+
         System.out.println("Id do usuario recebido front: "+dados.getId());
         return ResponseEntity.ok(chamados);
 

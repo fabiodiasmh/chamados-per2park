@@ -5,9 +5,9 @@
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://163.176.145.34:5432/postgres}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:Marley2015}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,7 +20,7 @@ spring:
         format_sql: true  # Facilita leitura no log
 
   flyway:
-    enabled: false
+    enabled: true
     baseline-on-migrate: true  # Evita erro se DB já tiver tabelas
     locations: classpath:db/migration
 

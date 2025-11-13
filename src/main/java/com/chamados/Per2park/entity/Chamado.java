@@ -13,20 +13,27 @@ import java.time.LocalDateTime;
 @Table(name = "chamados")
 
 @Data
-@ToString(exclude = "usuario") // evita loop infinito no toString
+@ToString(exclude = {"usuario", "statusChamado"}) // evita loops
 
 public class Chamado {
 
 
-
     @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chamado_id", nullable = false, unique = true)
     private Long chamadoId;
 
     private String email;
 
-    private Long status;
+
+//        private Long status;
+
+    // ✅ Substitua 'Long status' por relacionamento
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id", nullable = false)
+    private StatusChamado statusChamado;
+    //✅ Agora o status é um objeto real — não um número mágico.
+
 
     @CreationTimestamp
     @Column(name = "data_criacao", updatable = false)
@@ -35,7 +42,7 @@ public class Chamado {
     // Muitos chamados pertencem a um único usuário
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
-//    @JsonIgnore // ← evita serializar a lista de chamados ao serializar Usuario
+    //    @JsonIgnore // ← evita serializar a lista de chamados ao serializar Usuario
     private Usuario usuario;
 
 }

@@ -57,8 +57,44 @@ public class UsuarioService {
 //
 //    }
 
+//public Chamado salvaChamado(ChamadoInputDTO dados) {
+//    // Validação básica
+//    if (dados.getChamadoId() == null) {
+//        throw new IllegalArgumentException("chamadoId é obrigatório");
+//    }
+//    if (dados.getStatusId() == null) {
+//        throw new IllegalArgumentException("statusId é obrigatório");
+//    }
+//    if (dados.getUsuario() == null || dados.getUsuario().getId() == null) {
+//        throw new IllegalArgumentException("usuario.id é obrigatório");
+//    }
+//
+//    // Busca relacionamentos
+//    Usuario usuario = usuarioRepository.findById(dados.getUsuario().getId())
+//            .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
+//
+//    StatusChamado status = statusChamadoRepository.findById(dados.getStatusId())
+//            .orElseThrow(() -> new RuntimeException("Status de chamado não encontrado!"));
+//
+//    // Verifica se o chamado já existe
+//    Chamado chamado = chamadoRepository.findByChamadoId(dados.getChamadoId());
+//
+//    if (chamado == null) {
+//        // Cria novo
+//        chamado = new Chamado();
+//        chamado.setChamadoId(dados.getChamadoId());
+//    }
+//
+//    // Atualiza dados (tanto para novo quanto existente)
+//    chamado.setEmail(dados.getEmail());
+//    chamado.setStatusChamado(status);
+//    chamado.setUsuario(usuario);
+//
+//    return chamadoRepository.save(chamado);
+//}
+
 public Chamado salvaChamado(ChamadoInputDTO dados) {
-    // Validação básica
+
     if (dados.getChamadoId() == null) {
         throw new IllegalArgumentException("chamadoId é obrigatório");
     }
@@ -76,22 +112,17 @@ public Chamado salvaChamado(ChamadoInputDTO dados) {
     StatusChamado status = statusChamadoRepository.findById(dados.getStatusId())
             .orElseThrow(() -> new RuntimeException("Status de chamado não encontrado!"));
 
-    // Verifica se o chamado já existe
-    Chamado chamado = chamadoRepository.findByChamadoId(dados.getChamadoId());
+    // ➜ Sempre criar um novo
+    Chamado chamado = new Chamado();
 
-    if (chamado == null) {
-        // Cria novo
-        chamado = new Chamado();
-        chamado.setChamadoId(dados.getChamadoId());
-    }
-
-    // Atualiza dados (tanto para novo quanto existente)
+    chamado.setChamadoId(dados.getChamadoId());
     chamado.setEmail(dados.getEmail());
     chamado.setStatusChamado(status);
     chamado.setUsuario(usuario);
 
     return chamadoRepository.save(chamado);
 }
+
 
     public UserLogin salvarLogin(UserLogin dados){
 

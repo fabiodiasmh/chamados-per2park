@@ -18,9 +18,14 @@ import java.time.LocalDateTime;
 public class Chamado {
 
 
+    // 🔹 Nova chave primária autogerada
     @Id
-    //    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "chamado_id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, unique = true)
+    private Long id;
+
+    // 🔹 Este campo agora DEIXA de ser PK e vira só um campo comum
+    @Column(name = "chamado_id")
     private Long chamadoId;
 
     private String email;

@@ -26,6 +26,8 @@ public class ApiSAT {
     @Qualifier("webClientSAT")
     public WebClient webClientSAT;
 
+    //teste
+
     @Autowired
     public ObjectMapper objectMapper; // Já configurado pelo Spring Boot
 
@@ -77,6 +79,18 @@ public class ApiSAT {
         } catch (Exception e) {
             throw new RuntimeException("Erro ao autenticar no serviço SAT: " + e.getMessage(), e);
         }
+    }
+
+    public void t(){
+var io = 10;
+var oi =12;
+
+
+//teste
+        //teste01
+
+
+
     }
 
 

@@ -27,8 +27,7 @@ public class UserController {
     @PostMapping("/insert_chamado")
     public ResponseEntity<String> tes(@Valid @RequestBody ChamadoInputDTO dados){
         System.out.println("recebendo "+ dados);
-        System.out.println("recebendo "+ dados);
-        System.out.println("recebendo "+ dados);
+
 
     usuarioService.salvaChamado(dados);
 
@@ -69,6 +68,11 @@ public class UserController {
         List<ChamadoDTO> chamados = usuarioService.buscaMeusChamadosDto(dados.getId());
 
         System.out.println("Id do usuario recebido front: "+dados.getId());
+
+        System.out.printf("1 segundo o defaut");
+
+        System.out.println("antes era 3 segundos");
+
         return ResponseEntity.ok(chamados);
 
     }

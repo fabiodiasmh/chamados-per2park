@@ -25,17 +25,17 @@ public class UserController {
 
 
     @PostMapping("/insert_chamado")
-    public ResponseEntity<String> tes(@Valid @RequestBody ChamadoInputDTO dados){
-        System.out.println("recebendo "+ dados);
+    public ResponseEntity<String> tes(@Valid @RequestBody ChamadoInputDTO dados) {
+        System.out.println("recebendo " + dados);
 
 
-    usuarioService.salvaChamado(dados);
+        usuarioService.salvaChamado(dados);
 
-        return  ResponseEntity.ok("Chamado inserido no banco");
+        return ResponseEntity.ok("Chamado inserido no banco");
     }
 
     @PostMapping("/user_login")
-    public void userLogin( @RequestBody UserLogin dados, HttpServletRequest request){
+    public void userLogin(@RequestBody UserLogin dados, HttpServletRequest request) {
 
         // Captura IP e User-Agent
         String ipOrigem = getClientIp(request);
@@ -47,7 +47,8 @@ public class UserController {
         userlogin.setNome(dados.getNome());
         userlogin.setEmail(dados.getEmail());
         userlogin.setUsuario_id(dados.getUsuario_id()); // se existir
-//        userlogin.setToken_acesso(dados.getToken_acesso()); // se existir
+
+
         userlogin.setIp_origem(ipOrigem);
         userlogin.setUser_agent(userAgent);
 
@@ -64,10 +65,10 @@ public class UserController {
     }
 
     @PostMapping("/load_meus_chamados")
-    public ResponseEntity<List<ChamadoDTO>> meus_chamados(@Valid @RequestBody MeusChamadosRequestDTO dados){
+    public ResponseEntity<List<ChamadoDTO>> meus_chamados(@Valid @RequestBody MeusChamadosRequestDTO dados) {
         List<ChamadoDTO> chamados = usuarioService.buscaMeusChamadosDto(dados.getId());
 
-        System.out.println("Id do usuario recebido front: "+dados.getId());
+        System.out.println("Id do usuario recebido front: " + dados.getId());
 
         System.out.printf("1 segundo o defaut");
 

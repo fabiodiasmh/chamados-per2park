@@ -130,21 +130,41 @@ public Chamado salvaChamado(ChamadoInputDTO dados) {
         return usuarioLogadoRepository.save(dados);
     }
 
-    public List<ChamadoDTO> buscaMeusChamadosDto(Long usuarioId) {
-        if (usuarioId == null) {
-            throw new IllegalArgumentException("ID do usuário não pode ser nulo.");
-        }
+//    public List<ChamadoDTO> buscaMeusChamadosDto(Long usuarioId) {
+//        if (usuarioId == null) {
+//            throw new IllegalArgumentException("ID do usuário não pode ser nulo.");
+//        }
+//
+//        return chamadoRepository.findByUsuarioId(usuarioId)
+//                .stream()
+//                .map(chamado -> new ChamadoDTO(
+//                        chamado.getChamadoId(),
+////                        chamado.getEmail(),
+////                        chamado.getStatusChamado(),
+//                        chamado.getStatusChamado().getId(),
+//                        chamado.getDataCriacao(),
+//                        chamado.getUsuario().getId(),                       // assumindo que Usuario tem getId()
+//                        chamado.getUsuario().getNome() != null ? chamado.getUsuario().getNome() : ""
+//                ))
+//                .toList();
+//    }
 
-        return chamadoRepository.findByUsuarioId(usuarioId)
-                .stream()
-                .map(chamado -> new ChamadoDTO(
-                        chamado.getChamadoId(),
-                        chamado.getEmail(),
-//                        chamado.getStatusChamado(),
-                        chamado.getDataCriacao(),
-                        chamado.getUsuario().getId(),                       // assumindo que Usuario tem getId()
-                        chamado.getUsuario().getNome() != null ? chamado.getUsuario().getNome() : ""
-                ))
-                .toList();
+public List<ChamadoDTO> buscaMeusChamadosDto(Long usuarioId) {
+    if (usuarioId == null) {
+        throw new IllegalArgumentException("ID do usuário não pode ser nulo.");
     }
+
+    return chamadoRepository.findUltimosChamadosByUsuario(usuarioId)
+            .stream()
+            .map(chamado -> new ChamadoDTO(
+                    chamado.getChamadoId(),
+                    chamado.getStatusChamado().getId(),
+                    chamado.getDataCriacao(),
+                    chamado.getUsuario().getId(),
+                    chamado.getUsuario().getNome() != null ? chamado.getUsuario().getNome() : ""
+            ))
+            .toList();
+}
+
+
 }

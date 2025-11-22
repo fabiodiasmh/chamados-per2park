@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 
-
 @RestController
 @RequestMapping("/api")
 
@@ -158,65 +157,66 @@ public class ChamadosController {
 //    public ResponseEntity<Map<String, Long>> chamadosPorStatus(HttpSession session) {
 //        String token = (String) session.getAttribute("TOKEN_USUARIO");
 //        Map<String, Long> a = separaStatusChamados.getTotalQuantidadePorStatus(token);
-////        a.forEach((Nome, quantidade) -> System.out.println(Nome + ": " + quantidade));
+
+    /// /        a.forEach((Nome, quantidade) -> System.out.println(Nome + ": " + quantidade));
 //
 //        return ResponseEntity.ok(a);
 //    }
 // ✅ Quantidade de chamados por status
-@Operation(
-        summary = "Contagem de chamados por status",
-        description = "Retorna um mapa com a quantidade de chamados em cada status (ex: 'ABERTO', 'EM ANDAMENTO', 'FECHADO').",
-        security = @SecurityRequirement(name = "bearerAuth")
-)
-@ApiResponse(responseCode = "200", description = "Mapa de contagem retornado com sucesso",
-        content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Map.class, example = """
-                {
-                  "ABERTO": 12,
-                  "EM ANDAMENTO": 5,
-                  "FECHADO": 30
-                }
-                """)))
-@ApiResponse(responseCode = "401", description = "Não autorizado")
-@ApiResponse(responseCode = "502", description = "Erro ao consultar serviço externo")
-@Parameter(name = "Authorization", in = ParameterIn.HEADER, required = true,
-        schema = @Schema(type = "string", example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx"))
+    @Operation(
+            summary = "Contagem de chamados por status",
+            description = "Retorna um mapa com a quantidade de chamados em cada status (ex: 'ABERTO', 'EM ANDAMENTO', 'FECHADO').",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponse(responseCode = "200", description = "Mapa de contagem retornado com sucesso",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Map.class, example = """
+                            {
+                              "ABERTO": 12,
+                              "EM ANDAMENTO": 5,
+                              "FECHADO": 30
+                            }
+                            """)))
+    @ApiResponse(responseCode = "401", description = "Não autorizado")
+    @ApiResponse(responseCode = "502", description = "Erro ao consultar serviço externo")
+    @Parameter(name = "Authorization", in = ParameterIn.HEADER, required = true,
+            schema = @Schema(type = "string", example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx"))
 
-@GetMapping("/chamadosPorStatus")
-public ResponseEntity<Map<String, Long>> chamadosPorStatus(
-        @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    @GetMapping("/chamadosPorStatus")
+    public ResponseEntity<Map<String, Long>> chamadosPorStatus(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-    // 🔹 Validação do token no header
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .header("WWW-Authenticate", "Bearer realm=\"api\"")
-                .body(null);
+        // 🔹 Validação do token no header
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .header("WWW-Authenticate", "Bearer realm=\"api\"")
+                    .body(null);
+        }
+
+        String token = authHeader.substring(7).trim();
+        if (token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .header("WWW-Authenticate", "Bearer realm=\"api\"")
+                    .body(null);
+        }
+
+        try {
+            Map<String, Long> resultado = separaStatusChamados.getTotalQuantidadePorStatus(token);
+            return ResponseEntity.ok(resultado);
+
+        } catch (ResponseStatusException ex) {
+            // Propaga erros de autorização/validação da camada de serviço
+            return ResponseEntity.status(ex.getStatusCode()).body(null);
+
+        } catch (Exception ex) {
+            // Log seguro (não expõe token completo)
+            System.err.println("Erro em /chamadosPorStatus com token: " +
+                    (token.length() > 10 ? token.substring(0, 10) + "..." : token));
+            ex.printStackTrace();
+
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(null);
+        }
     }
-
-    String token = authHeader.substring(7).trim();
-    if (token.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .header("WWW-Authenticate", "Bearer realm=\"api\"")
-                .body(null);
-    }
-
-    try {
-        Map<String, Long> resultado = separaStatusChamados.getTotalQuantidadePorStatus(token);
-        return ResponseEntity.ok(resultado);
-
-    } catch (ResponseStatusException ex) {
-        // Propaga erros de autorização/validação da camada de serviço
-        return ResponseEntity.status(ex.getStatusCode()).body(null);
-
-    } catch (Exception ex) {
-        // Log seguro (não expõe token completo)
-        System.err.println("Erro em /chamadosPorStatus com token: " +
-                (token.length() > 10 ? token.substring(0, 10) + "..." : token));
-        ex.printStackTrace();
-
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(null);
-    }
-}
 
     @GetMapping("/status")
     public ResponseEntity<List<ChamadoBaseDTO>> status(
@@ -338,12 +338,12 @@ public ResponseEntity<Map<String, Long>> chamadosPorStatus(
     }
 
     @GetMapping("/sat")
-    public ResponseEntity<List<?>> login_sat(@RequestParam String serie){
+    public ResponseEntity<List<?>> login_sat(@RequestParam String serie) {
 //        System.out.println("login no SAT");
 
         TokenSatDTO token = apiSAT.autenticaSatService();
 
-       List<SatEquipamentoDTO> dd = apiSAT.verificaSerieSatService(token,serie);
+        List<SatEquipamentoDTO> dd = apiSAT.verificaSerieSatService(token, serie);
 //        System.out.println("dd: "+dd);
         return ResponseEntity.ok(dd);
 

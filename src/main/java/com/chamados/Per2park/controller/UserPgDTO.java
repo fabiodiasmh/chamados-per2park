@@ -11,8 +11,10 @@ public class UserPgDTO {
     @JsonProperty("id")
     private Long id;
 
+
     @JsonProperty("nome")
     private String nome;
+
 
     @JsonProperty("email")
     private String email;

@@ -18,4 +18,7 @@ public class TokenDTO {
 
     @JsonProperty("User")
     private JsonNode user;
+
+    @JsonProperty("dadosUsuario")
+    private UsuarioPertoDTO dadosUsuario; // << antes era Usuario (entidade)
 }

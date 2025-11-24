@@ -7,6 +7,9 @@ import com.chamados.Per2park.controller.RequestDTO.StatusDTO;
 import com.chamados.Per2park.controller.ResponseDTO.ChamadoBaseDTO;
 import com.chamados.Per2park.controller.ResponseDTO.ChamadosAgrupadosPorStatusDTO;
 import com.chamados.Per2park.controller.ResponseDTO.TokenDTO;
+import com.chamados.Per2park.controller.ResponseDTO.UsuarioPertoDTO;
+import com.chamados.Per2park.entity.Usuario;
+import com.chamados.Per2park.repository.UsuarioRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +41,9 @@ public class ApiService {
     @Autowired
     @Qualifier("webClientChamados")
     private WebClient webClientChamados;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private ObjectMapper objectMapper; // Injetado pelo Spring Boot
@@ -93,8 +99,58 @@ public class ApiService {
         }
     }
 
-    public TokenDTO ServiceAutentica(RequestAutentica dados) {
+//    public TokenDTO ServiceAutentica(RequestAutentica dados) {
+//
+//        try {
+//            // chamada WebClient...
+//            Object[] responseArray = webClientAuth.post()
+//                    .uri("/api/v0/User/userValidation")
+//                    .bodyValue(dados)
+//                    .retrieve()
+//                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+//                            response -> response.bodyToMono(String.class)
+//                                    .map(body -> new RuntimeException("Erro API: " + body)))
+//                    .bodyToMono(Object[].class)
+//                    .block();
+//
+//            if (responseArray == null || responseArray.length < 2) {
+//                throw new RuntimeException("Resposta inválida");
+//            }
+//
+//            // Converte o primeiro item (usuário) para JsonNode
+//            JsonNode userNode = objectMapper.convertValue(responseArray[0], JsonNode.class);
+//
+//            String token = responseArray[1].toString();
+//
+//            // Extrai o ID corretamente
+//            if (!userNode.has("Id")) {
+//                throw new RuntimeException("Usuário retornado não contém o campo 'Id'");
+//            }
+//
+//            JsonNode userData = userNode.get("User");
+//
+//            if (!userData.has("Id")) {
+//                throw new RuntimeException("Response.User não contém 'Id': " + userData.toString());
+//            }
+//
+//            Long userId = userData.get("Id").asLong();
+//
+//            // Buscar usuário no banco
+//            Usuario usuarioBD = usuarioRepository.findById(userId).orElse(null);
+//
+//            return new TokenDTO(token, userNode, usuarioBD);
+//
+//        } catch (WebClientResponseException.Unauthorized ex) {
+//            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas para o serviço externo");
+//        } catch (WebClientResponseException ex) {
+//            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro no serviço externo: " + ex.getResponseBodyAsString());
+//        }
+//
+//
+//    }
 
+
+    public TokenDTO ServiceAutentica(RequestAutentica dados) {
         try {
             // chamada WebClient...
             Object[] responseArray = webClientAuth.post()
@@ -108,24 +164,53 @@ public class ApiService {
                     .block();
 
             if (responseArray == null || responseArray.length < 2) {
-                throw new RuntimeException("Resposta inválida");
+                throw new RuntimeException("Resposta inválida da API externa");
             }
 
-            // Converte o primeiro item (usuário) para JsonNode
+            // O primeiro item já É o usuário
             JsonNode userNode = objectMapper.convertValue(responseArray[0], JsonNode.class);
+
+            // Extrai o ID corretamente
+            if (!userNode.has("Id")) {
+                throw new RuntimeException("Usuário retornado não contém o campo 'Id'");
+            }
+
+            Long userId = userNode.get("Id").asLong();
+
+            // Token está no segundo elemento
             String token = responseArray[1].toString();
 
-//            System.out.println(userNode);
-            return new TokenDTO(token, userNode);
+            Usuario usuarioBD = usuarioRepository.findById(userId).orElse(null);
+
+            UsuarioPertoDTO usuarioDTO = null;
+
+            if (usuarioBD != null) {
+                usuarioDTO = new UsuarioPertoDTO(
+
+                        usuarioBD.getNome(),
+                        usuarioBD.getEmail(),
+                        usuarioBD.getCargo(),
+
+
+                        usuarioBD.getWhatsapp()
+                );
+            } else {
+                // opcional: log
+                System.out.println("⚠ Usuario não encontrado no banco local: " + userId);
+            }
+
+
+
+            return new TokenDTO(token, userNode, usuarioDTO);
 
         } catch (WebClientResponseException.Unauthorized ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas para o serviço externo");
         } catch (WebClientResponseException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Erro no serviço externo: " + ex.getResponseBodyAsString());
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                    "Erro no serviço externo: " + ex.getResponseBodyAsString());
         }
-
-
     }
+
 
     public List<ChamadoBaseDTO> ServiceGetChamados(String token) {
         RequestChamados requestBody = new RequestChamados();
